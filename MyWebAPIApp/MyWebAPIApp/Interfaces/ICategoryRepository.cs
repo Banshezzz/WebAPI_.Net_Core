@@ -9,5 +9,7 @@ namespace MyWebAPIApp.Interfaces
         Category GetCategory(string name);
         ICollection<Pokemon> GetPokemonByCategory(int id);
         bool CategoryExists(int id);
+        bool CreateCategory(Category category);
+        bool Save();
     }
 }
