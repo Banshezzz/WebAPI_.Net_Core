@@ -63,7 +63,7 @@ namespace MyWebAPIApp.Controllers
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public IActionResult Createreview([FromQuery] int pokeId, [FromQuery]int reviewerId,[FromBody] ReviewDto reviewCreate)
+        public IActionResult Createreview([FromQuery] int pokeId, [FromQuery] int reviewerId, [FromBody] ReviewDto reviewCreate)
         {
             if (reviewCreate == null) return BadRequest(ModelState);
 
@@ -89,6 +89,31 @@ namespace MyWebAPIApp.Controllers
             }
 
             return Ok("Successfully created");
+        }
+
+        [HttpPut("{reviewId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateReview(int reviewId, [FromBody] ReviewDto updateReview)
+        {
+            if (updateReview == null) return BadRequest(ModelState);
+
+            if (reviewId != updateReview.Id) return BadRequest(ModelState);
+
+            if (!_reviewRepository.ReviewExists(reviewId)) return NotFound();
+
+            if (!ModelState.IsValid) return BadRequest();
+
+            var reviewMap = _mapper.Map<Review>(updateReview);
+
+            if (!_reviewRepository.UpdateReview(reviewMap))
+            {
+                ModelState.AddModelError("", "Something wrong when updating");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
         }
     }
 }

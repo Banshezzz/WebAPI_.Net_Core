@@ -12,9 +12,15 @@ namespace MyWebAPIApp.Controllers
     public class PokemonController : Controller
     {
         private readonly IPokemonRepository _pokemonRepository;
+        private readonly IOwnerRepository _ownerRepository;
+        private readonly ICategoryRepository _categoryRepository;
+
         private readonly IMapper _mapper;
 
-        public PokemonController(IPokemonRepository pokemonRepository, IMapper mapper)
+        public PokemonController(IPokemonRepository pokemonRepository
+            , IOwnerRepository ownerRepository
+            , ICategoryRepository categoryRepository
+            , IMapper mapper)
         {
             _mapper = mapper;
             _pokemonRepository = pokemonRepository;
@@ -83,6 +89,31 @@ namespace MyWebAPIApp.Controllers
             }
 
             return Ok("Successfully created");
+        }
+
+        [HttpPut("{pokeId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateCountry([FromQuery] int ownerId, [FromQuery] int categpryId, int pokeId, [FromBody] PokemonDto updatePokemon)
+        {
+            if (updatePokemon == null) return BadRequest(ModelState);
+
+            if (pokeId != updatePokemon.Id) return BadRequest(ModelState);
+
+            if (!_pokemonRepository.PokemonExists(pokeId)) return NotFound();
+
+            if (!ModelState.IsValid) return BadRequest();
+
+            var pokemonMap = _mapper.Map<Pokemon>(updatePokemon);
+
+            if (!_pokemonRepository.UpdatePokemon(ownerId, categpryId, pokemonMap))
+            {
+                ModelState.AddModelError("", "Something wrong when updating");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
         }
     }
 }

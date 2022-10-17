@@ -15,8 +15,8 @@ namespace MyWebAPIApp.Repository
 
         public bool CreateReview(Review review)
         {
-                _context.Add(review);
-                return Save();
+            _context.Add(review);
+            return Save();
         }
 
         public Review GetReview(int reviewId)
@@ -42,6 +42,12 @@ namespace MyWebAPIApp.Repository
         public bool Save()
         {
             return _context.SaveChanges() > 0;
+        }
+
+        public bool UpdateReview(Review review)
+        {
+            _context.Update(review);
+            return Save();
         }
     }
 }

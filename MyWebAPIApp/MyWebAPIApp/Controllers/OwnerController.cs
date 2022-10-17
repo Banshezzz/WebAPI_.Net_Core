@@ -61,7 +61,7 @@ namespace MyWebAPIApp.Controllers
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public IActionResult CreateOwner([FromQuery] int countryId,[FromBody] OwnerDto ownerCreate)
+        public IActionResult CreateOwner([FromQuery] int countryId, [FromBody] OwnerDto ownerCreate)
         {
             if (ownerCreate == null) return BadRequest(ModelState);
 
@@ -86,6 +86,31 @@ namespace MyWebAPIApp.Controllers
             }
 
             return Ok("Successfully created");
+        }
+
+        [HttpPut("{ownerId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateCountry(int ownerId, [FromBody] OwnerDto updateOwner)
+        {
+            if (updateOwner == null) return BadRequest(ModelState);
+
+            if (ownerId != updateOwner.Id) return BadRequest(ModelState);
+
+            if (!_ownerRepository.OwnerExists(ownerId)) return NotFound();
+            
+            if (!ModelState.IsValid) return BadRequest();
+
+            var ownerMap = _mapper.Map<Owner>(updateOwner);
+
+            if (!_ownerRepository.UpdateOwner(ownerMap))
+            {
+                ModelState.AddModelError("", "Something wrong when updating");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
         }
     }
 }

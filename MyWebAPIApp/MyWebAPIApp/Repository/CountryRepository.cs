@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using MyWebAPIApp.Data;
+using MyWebAPIApp.Dto;
 using MyWebAPIApp.Interfaces;
 using MyWebAPIApp.Models;
 
@@ -47,6 +49,12 @@ namespace MyWebAPIApp.Repository
         public bool Save()
         {
             return _context.SaveChanges() > 0;
+        }
+
+        public bool UpdateCountry(Country country)
+        {
+            _context.Update(country);
+           return Save();
         }
     }
 }
