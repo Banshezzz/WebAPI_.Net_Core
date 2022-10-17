@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MyWebAPIApp.Dto;
 using MyWebAPIApp.Interfaces;
 using MyWebAPIApp.Models;
+using MyWebAPIApp.Repository;
 
 namespace MyWebAPIApp.Controllers
 {
@@ -53,6 +54,35 @@ namespace MyWebAPIApp.Controllers
 
             if (!ModelState.IsValid) return BadRequest(ModelState);
             return Ok(raitng);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreatePokemon([FromQuery] int ownerId, [FromQuery] int categoryId, [FromBody] PokemonDto pokemonCreate)
+        {
+            if (pokemonCreate == null) return BadRequest(ModelState);
+
+            var pokemon = _pokemonRepository.GetPokemons()
+                .Where(c => c.Name.Trim().ToUpper() == pokemonCreate.Name.TrimEnd().ToUpper())
+                .FirstOrDefault();
+
+            if (pokemon != null)
+            {
+                ModelState.AddModelError("", "pokemon already exists");
+                return StatusCode(422, ModelState);
+            }
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var pokemonMap = _mapper.Map<Pokemon>(pokemonCreate);
+
+            if (!_pokemonRepository.CreatePokemon(ownerId, categoryId, pokemonMap))
+            {
+                ModelState.AddModelError("", "Something wrong went saving");
+                return StatusCode(500, ModelState);
+            }
+
+            return Ok("Successfully created");
         }
     }
 }
