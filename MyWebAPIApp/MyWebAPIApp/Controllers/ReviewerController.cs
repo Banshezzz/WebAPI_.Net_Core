@@ -108,5 +108,23 @@ namespace MyWebAPIApp.Controllers
 
             return NoContent();
         }
+
+        [HttpDelete("{reviewerId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteReviewer(int reviewerId)
+        {
+            if (!_reviewerRepository.ReviewerExists(reviewerId)) return NotFound();
+
+            var reviewerDelete = _reviewerRepository.GetReviewer(reviewerId);
+
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            if (!_reviewerRepository.DeleteReviewer(reviewerDelete))
+                ModelState.AddModelError("", "something wrong when deleting");
+
+            return NoContent();
+        }
     }
 }

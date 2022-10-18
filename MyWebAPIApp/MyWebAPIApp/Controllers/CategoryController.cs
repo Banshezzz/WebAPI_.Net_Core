@@ -106,5 +106,24 @@ namespace MyWebAPIApp.Controllers
 
             return NoContent();
         }
+
+        [HttpDelete("{categoryId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteCategory(int categoryId)
+        {
+            if (!_categoryRepository.CategoryExists(categoryId)) return NotFound();
+
+            var categoryDelete = _categoryRepository.GetCategory(categoryId);
+
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            if (!_categoryRepository.DeleteCategory(categoryDelete))
+                ModelState.AddModelError("", "something wrong when deleting");
+
+            return NoContent();
+        }
+
     }
 }

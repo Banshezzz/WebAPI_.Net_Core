@@ -12,18 +12,19 @@ namespace MyWebAPIApp.Controllers
     public class PokemonController : Controller
     {
         private readonly IPokemonRepository _pokemonRepository;
-        private readonly IOwnerRepository _ownerRepository;
+        private readonly IReviewRepository _reviewRepository;
         private readonly ICategoryRepository _categoryRepository;
 
         private readonly IMapper _mapper;
 
         public PokemonController(IPokemonRepository pokemonRepository
-            , IOwnerRepository ownerRepository
+            , IReviewRepository reviewRepository
             , ICategoryRepository categoryRepository
             , IMapper mapper)
         {
             _mapper = mapper;
             _pokemonRepository = pokemonRepository;
+            _reviewRepository = reviewRepository;
         }
 
         [HttpGet]
@@ -112,6 +113,28 @@ namespace MyWebAPIApp.Controllers
                 ModelState.AddModelError("", "Something wrong when updating");
                 return StatusCode(500, ModelState);
             }
+
+            return NoContent();
+        }
+
+        [HttpDelete("{pokemonId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeletePokemon(int pokemonId)
+        {
+            if (!_pokemonRepository.PokemonExists(pokemonId)) return NotFound();
+
+            var reviewDelete = _reviewRepository.GetReviewsOfAPokemon(pokemonId);
+            var pokemonDelete = _pokemonRepository.GetPokemon(pokemonId);
+
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            if (!_reviewRepository.DeleteReviews(reviewDelete.ToList()))
+                ModelState.AddModelError("", "something wrong when deleting");
+
+            if (!_pokemonRepository.DeletePokemon(pokemonDelete))
+                ModelState.AddModelError("", "something wrong when deleting");
 
             return NoContent();
         }
