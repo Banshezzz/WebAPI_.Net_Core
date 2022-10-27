@@ -16,6 +16,7 @@ namespace Bank.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(typeof(Account), 200)]
         public IActionResult GetAll()
         {
             var getAll = _context.Banks.ToList();
