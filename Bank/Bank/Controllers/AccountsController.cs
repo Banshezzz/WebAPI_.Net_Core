@@ -44,6 +44,21 @@ namespace Bank_System.Controllers
             return Ok(account);
         }
 
+        [HttpPost("Login")]
+        [ProducesResponseType(200, Type = typeof(Account))]
+        [ProducesResponseType(400)]
+        public IActionResult Login([FromBody] (string username, string password) paramaters)
+        {
+            var account = _mapper.Map<AccountDTO>(_context.Accounts.Any(a => a.Username == paramaters.username && CommonMethods.ConvertToDecrypt(a.Password) == paramaters.password));
+            if (!account) return NotFound();
+
+            /*account.Password = CommonMethods.ConvertToDecrypt(account.Password);*/
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            return Ok(account);
+        }
+
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
@@ -72,14 +87,14 @@ namespace Bank_System.Controllers
         [ProducesResponseType(404)]
         public IActionResult updateAccount(string AccountName, [FromBody] AccountDTO account)
         {
-            if (_context.Accounts.Where(a => a.Username == AccountName).FirstOrDefault() == null || account.Username != AccountName) return NotFound();
+            if (_context.Accounts.Any(a => a.Username == AccountName) == null || account.Username != AccountName) return NotFound();
 
-           /* account.Password = CommonMethods.ConvertToEncrypt(account.Password);*/
+            account.Password = CommonMethods.ConvertToEncrypt(account.Password);
             var updateAccount = _mapper.Map<Account>(account);
             _context.Update(updateAccount);
             if (_context.SaveChanges() == 0)
             {
-                ModelState.AddModelError("", "Something went wrong updating review");
+                ModelState.AddModelError("", "Something went wrong updating account");
                 return StatusCode(500, ModelState);
             }
 
