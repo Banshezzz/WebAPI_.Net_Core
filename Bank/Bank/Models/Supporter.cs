@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Bank.Models
+namespace Bank_System.Models
 {
     public partial class Supporter
     {
@@ -9,7 +9,7 @@ namespace Bank.Models
         public string? Username { get; set; }
         public string? Email { get; set; }
         public int? Phone { get; set; }
-        public string BankCode { get; set; } = null!;
+        public int BankCode { get; set; }
 
         public virtual Bank BankCodeNavigation { get; set; } = null!;
     }

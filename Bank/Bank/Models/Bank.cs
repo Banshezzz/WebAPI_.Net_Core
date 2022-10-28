@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Bank.Models
+namespace Bank_System.Models
 {
     public partial class Bank
     {
@@ -13,7 +13,6 @@ namespace Bank.Models
 
         public int Id { get; set; }
         public string? BankName { get; set; }
-        public string BankCode { get; set; } = null!;
 
         public virtual ICollection<Account> Accounts { get; set; }
         public virtual ICollection<Supporter> Supporters { get; set; }
