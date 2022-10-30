@@ -2,7 +2,7 @@
 using Bank_System.DTO;
 using Bank_System.Models;
 using Microsoft.AspNetCore.Mvc;
-using Bank_System.Common;
+using Bank_System.Interfaces;
 
 namespace Bank_System.Controllers
 {
@@ -10,13 +10,15 @@ namespace Bank_System.Controllers
     [ApiController]
     public class AccountsController : ControllerBase
     {
-        private readonly Bank_SystemContext _context;
+        private readonly IAccountRepository _accountRepository;
+        private readonly IAuthRepository _authRepository;
         private readonly IMapper _mapper;
 
-        public AccountsController(Bank_SystemContext context, IMapper mapper)
+        public AccountsController(IMapper mapper, IAccountRepository accountRepository, IAuthRepository authRepository)
         {
-            _context = context;
             _mapper = mapper;
+            _accountRepository = accountRepository;
+            _authRepository = authRepository;
         }
 
         [HttpGet]
@@ -26,73 +28,78 @@ namespace Bank_System.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            return Ok(_mapper.Map<List<AccountDTO>>(_context.Accounts.ToList()));
+            var accounts = _mapper.Map<List<AccountDTO>>(_accountRepository.GetAccounts());
+            return Ok(accounts);
         }
 
-        [HttpGet("{AccountName}")]
+        [HttpGet("{accountName}")]
         [ProducesResponseType(200, Type = typeof(Account))]
         [ProducesResponseType(400)]
-        public IActionResult GetAccount(string AccountName)
+        public IActionResult GetAccount(string accountName)
         {
-            var account = _mapper.Map<AccountDTO>(_context.Accounts.Where(a => a.Username == AccountName).FirstOrDefault());
+            var account = _mapper.Map<AccountDTO>(_accountRepository.GetAccount(accountName));
             if (account == null) return NotFound();
 
-            /*account.Password = CommonMethods.ConvertToDecrypt(account.Password);*/
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
+            return Ok(account);
+        }
+
+        [HttpPost("Register")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult Register([FromBody] RegisterDTO request)
+        {
+            if (request == null) return BadRequest(ModelState);
+            if (_accountRepository.AccountExist(request.Username))
+            {
+                ModelState.AddModelError("", "Account existed");
+                return StatusCode(422, ModelState);
+            }
+            _authRepository.CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+            var account = _mapper.Map<Account>(request);
+
+            if (!_accountRepository.CreateAccount(account, passwordHash, passwordSalt))
+            {
+                ModelState.AddModelError("", "Something went wrong when creating!");
+                return StatusCode(500, ModelState);
+            }
 
             return Ok(account);
         }
 
         [HttpPost("Login")]
-        [ProducesResponseType(200, Type = typeof(Account))]
-        [ProducesResponseType(400)]
-        public IActionResult Login([FromBody] (string username, string password) paramaters)
-        {
-            var account = _mapper.Map<AccountDTO>(_context.Accounts.Any(a => a.Username == paramaters.username && CommonMethods.ConvertToDecrypt(a.Password) == paramaters.password));
-            if (!account) return NotFound();
-
-            /*account.Password = CommonMethods.ConvertToDecrypt(account.Password);*/
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            return Ok(account);
-        }
-
-        [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public IActionResult Register([FromBody] AccountDTO account)
+        public IActionResult Login(LoginDTO request)
         {
-            if (account == null) return BadRequest(ModelState);
+            var account = _accountRepository.GetAccount(request.Username);
 
-            var createAccount = new Account()
-            {
-                Username = account.Username,
-                Password = CommonMethods.ConvertToEncrypt(account.Password),
-                PassportId = account.PassportId,
-                BankCode = account.BankCode,
-                Email = account.Email,
-                Phone = account.Phone,
-                Status = 0,
-            };
+            if (account == null) return NotFound();
 
-            _context.Accounts.Add(createAccount);
-            return Ok(_context.SaveChanges() > 0 ? true : false);
+            if (!_accountRepository.AccountExist(account.Username))
+                return NotFound();
+
+            if (!_authRepository.VerifyPasswordHash(request.Password, account.PasswordHash, account.PasswordSalt))
+                return BadRequest("Wrong password!");
+
+            string token = _authRepository.CreateToken(account);
+            return Ok(token);
         }
 
-        [HttpPut("{AccountName}")]
+        [HttpPut("{accountName}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public IActionResult updateAccount(string AccountName, [FromBody] AccountDTO account)
+        public IActionResult updateAccount(string accountName, [FromBody] AccountDTO request)
         {
-            if (_context.Accounts.Any(a => a.Username == AccountName) == null || account.Username != AccountName) return NotFound();
+            if (accountName == null) return BadRequest();
+            if (!_accountRepository.AccountExist(request.Username)) return NotFound();
 
-            account.Password = CommonMethods.ConvertToEncrypt(account.Password);
-            var updateAccount = _mapper.Map<Account>(account);
-            _context.Update(updateAccount);
-            if (_context.SaveChanges() == 0)
+            var updateAccount = _mapper.Map<Account>(request);
+
+            if (!_accountRepository.UpdateAccount(updateAccount))
             {
                 ModelState.AddModelError("", "Something went wrong updating account");
                 return StatusCode(500, ModelState);

@@ -7,7 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Common\**" />
+    <Content Remove="Common\**" />
+    <EmbeddedResource Remove="Common\**" />
+    <None Remove="Common\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Controllers\AuthController.cs" />
     <Compile Remove="Models\Customer.cs" />
+    <Compile Remove="Models\User.cs" />
   </ItemGroup>
 
   <ItemGroup>

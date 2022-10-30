@@ -10,6 +10,7 @@ namespace Bank_System
         {
             CreateMap<Account, AccountDTO>();
             CreateMap<AccountDTO, Account>();
+            CreateMap<RegisterDTO, Account>();
         }
     }
 }
