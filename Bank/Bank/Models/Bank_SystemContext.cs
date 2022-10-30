@@ -51,9 +51,9 @@ namespace Bank_System.Models
                     .HasMaxLength(20)
                     .IsFixedLength();
 
-                entity.Property(e => e.PasswordHash).HasMaxLength(50);
+                entity.Property(e => e.PasswordHash).HasMaxLength(200);
 
-                entity.Property(e => e.PasswordSalt).HasMaxLength(50);
+                entity.Property(e => e.PasswordSalt).HasMaxLength(200);
 
                 entity.HasOne(d => d.BankCodeNavigation)
                     .WithMany(p => p.Accounts)
@@ -71,21 +71,21 @@ namespace Bank_System.Models
 
             modelBuilder.Entity<Passport>(entity =>
             {
-                entity.HasNoKey();
+                entity.HasKey(e => e.Username);
 
                 entity.ToTable("Passport");
 
                 entity.HasIndex(e => e.Username, "IX_Passport")
                     .IsUnique();
 
-                entity.Property(e => e.Back).HasColumnType("image");
-
-                entity.Property(e => e.Front).HasColumnType("image");
-
                 entity.Property(e => e.Username).HasMaxLength(50);
 
+                entity.Property(e => e.Back).HasMaxLength(100);
+
+                entity.Property(e => e.Front).HasMaxLength(100);
+
                 entity.HasOne(d => d.UsernameNavigation)
-                    .WithOne()
+                    .WithOne(p => p.Passport)
                     .HasForeignKey<Passport>(d => d.Username)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Passport_Account");

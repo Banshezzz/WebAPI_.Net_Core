@@ -17,5 +17,6 @@ namespace Bank_System.Models
         public string PassportId { get; set; } = null!;
 
         public virtual Bank BankCodeNavigation { get; set; } = null!;
+        public virtual Passport? Passport { get; set; }
     }
 }
