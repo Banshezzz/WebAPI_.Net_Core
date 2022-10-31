@@ -26,7 +26,7 @@ namespace Bank_System.Models
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Data Source=BANSHEE;Initial Catalog=Bank_System;Integrated Security=True");
+                optionsBuilder.UseSqlServer("Data Source=May39;Initial Catalog=Bank_System;Integrated Security=True");
             }
         }
 
@@ -80,9 +80,9 @@ namespace Bank_System.Models
 
                 entity.Property(e => e.Username).HasMaxLength(50);
 
-                entity.Property(e => e.Back).HasMaxLength(100);
+                entity.Property(e => e.Back).HasColumnType("image");
 
-                entity.Property(e => e.Front).HasMaxLength(100);
+                entity.Property(e => e.Front).HasColumnType("image");
 
                 entity.HasOne(d => d.UsernameNavigation)
                     .WithOne(p => p.Passport)

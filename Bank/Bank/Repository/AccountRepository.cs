@@ -51,7 +51,7 @@ namespace Bank_System.Repository
         public bool UpdateAccount(Account account)
         {
             var updateAccount = _context.Accounts.Where(a => a.Username == account.Username).FirstOrDefault();
-            
+
             updateAccount.Phone = account.Phone;
             updateAccount.Birthday = account.Birthday;
             updateAccount.Address = account.Address;
@@ -59,7 +59,17 @@ namespace Bank_System.Repository
             updateAccount.Status = account.Status;
             updateAccount.PassportId = account.PassportId;
             updateAccount.BankCode = account.BankCode;
-            
+
+            _context.Update(updateAccount);
+            return SaveChange();
+        }
+
+        public bool UpdateAccountStatus(string username, int status)
+        {
+            var updateAccount = _context.Accounts.Where(a => a.Username == username).FirstOrDefault();
+
+            updateAccount.Status = status;
+
             _context.Update(updateAccount);
             return SaveChange();
         }

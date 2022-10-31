@@ -8,6 +8,7 @@ namespace Bank_System.Interfaces
         Account GetAccount(string username);
         bool CreateAccount(Account account, byte[] passwordHash, byte[] passwordSalt);
         bool UpdateAccount(Account account);
+        bool UpdateAccountStatus(string username,int status);
         bool AccountExist(string username);
         bool SaveChange();
     }

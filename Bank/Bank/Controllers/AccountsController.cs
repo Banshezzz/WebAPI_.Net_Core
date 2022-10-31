@@ -107,5 +107,28 @@ namespace Bank_System.Controllers
 
             return NoContent();
         }
+
+        [HttpPut("status/{username}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult updateAccountStatus(string username, [FromBody] int request)
+        {
+            if (username == null) return BadRequest();
+            if (!_accountRepository.AccountExist(username)) return NotFound();
+            if (request < 0 || request > 2)
+            {
+                ModelState.AddModelError("", "Error during changing");
+                return StatusCode(500, ModelState);
+            }
+
+            if (!_accountRepository.UpdateAccountStatus(username, request))
+            {
+                ModelState.AddModelError("", "Something went wrong updating account");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
     }
 }

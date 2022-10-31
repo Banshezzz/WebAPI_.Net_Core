@@ -4,8 +4,10 @@ namespace Bank_System.Interfaces
 {
     public interface IPassportRepository
     {
-        bool CreatePassport(string username, string[] images);
-        string GetFilePath(string username);
+        ICollection<Passport> GetPassports();
+        Passport GetPassport(string username);
+        bool CreatePassport(string username, byte[] front, byte[] back);
+        bool PassportExist(string username);
 
     }
 }
